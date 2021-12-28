@@ -3,6 +3,7 @@ version '1.0'
 
 buildscript {
     repositories {
+        maven { url 'http://maven.faceunity.com/repository/maven-public/' }
         google()
         jcenter()
     }
@@ -14,6 +15,7 @@ buildscript {
 
 rootProject.allprojects {
     repositories {
+        maven { url 'http://maven.faceunity.com/repository/maven-public/' }
         google()
         jcenter()
     }
@@ -25,7 +27,7 @@ android {
     compileSdkVersion 29
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 19
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     lintOptions {
@@ -41,6 +43,7 @@ android {
 dependencies {
     // for other module visit
     api 'im.zego:express-video:1.16.0'
-    api 'com.faceunity:nama:7.2.0'
+    implementation 'com.faceunity:core:8.0.0'
+    implementation 'com.faceunity:model:8.0.0'
     implementation 'androidx.annotation:annotation:1.1.0'
 }

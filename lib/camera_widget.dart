@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:zego_express_engine/zego_express_engine.dart';
 
 class CameraWidgetController {
-  CameraWidgetController();
+  final String roomId;
+  final String streamId;
+  CameraWidgetController(this.roomId, this.streamId);
 
   bool isFrontCamera = true;
 
@@ -54,12 +56,16 @@ class CameraWidgetController {
 
   /// 销毁
   void destroy() async {
+    await ZegoExpressEngine.instance.stopPublishingStream();
     await ZegoExpressEngine.instance.stopPreview();
+    await ZegoExpressEngine.instance.logoutRoom(this.roomId);
     await ZegoExpressEngine.instance.enableCamera(false);
 
     if (null != _textureId) {
       await ZegoExpressEngine.instance.destroyTextureRenderer(_textureId);
     }
+
+    await ZegoExpressEngine.destroyEngine();
   }
 
   //更新textureSize
@@ -78,15 +84,21 @@ class CameraWidgetController {
       return;
     }
 
+    // 创建用户对象
+    ZegoUser user = ZegoUser.id("user1");
+    // 开始登陆房间
+    ZegoExpressEngine.instance.loginRoom(this.roomId, user);
+
+    // 开始推流
+    ZegoExpressEngine.instance.startPublishingStream(this.streamId);
+
+    // 启用本地预览
     ZegoExpressEngine.instance
         .createTextureRenderer(_width.toInt(), _height.toInt())
         .then((value) async {
       _textureId = value;
       _previewViewWidget = Texture(textureId: _textureId);
-
-      ZegoCanvas previewCanvas =
-          ZegoCanvas(_textureId, ZegoViewMode.AspectFill, 0x000000);
-
+      ZegoCanvas previewCanvas = ZegoCanvas.view(_textureId);
       await ZegoExpressEngine.instance.startPreview(canvas: previewCanvas);
 
       createCallback?.call();
@@ -134,14 +146,13 @@ class CameraWidgetController {
 
 class CameraWidget extends StatefulWidget {
   final CameraWidgetController controller;
-  final String streamId;
   final BorderRadiusGeometry borderRadius;
   final Widget frontToggle;
 
   /// 是否预览模式
   final bool isPreView;
 
-  CameraWidget(this.controller, this.streamId,
+  CameraWidget(this.controller,
       {this.borderRadius, this.frontToggle, this.isPreView = false});
 
   @override
@@ -194,11 +205,13 @@ class _CameraState extends State<CameraWidget>
 
   @override
   void dispose() {
-    super.dispose();
     _onDestroy();
+    super.dispose();
   }
 
-  Future<void> _onDestroy() async {}
+  Future<void> _onDestroy() async {
+    widget.controller.destroy();
+  }
 
   @override
   void didUpdateWidget(CameraWidget oldWidget) {

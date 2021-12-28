@@ -12,6 +12,11 @@ import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
 
+import com.faceunity.core.entity.FURenderInputData;
+import com.faceunity.core.entity.FURenderOutputData;
+import com.faceunity.core.enumeration.FUInputBufferEnum;
+import com.faceunity.core.faceunity.FURenderKit;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
@@ -21,7 +26,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import im.zego.faceunity.FURenderer;
 import im.zego.zegoexpress.ZegoExpressEngine;
 import im.zego.zegoexpress.callback.IZegoCustomVideoCaptureHandler;
 import im.zego.zegoexpress.constants.ZegoPublishChannel;
@@ -65,7 +69,7 @@ public class VideoCaptureFromCamera extends IZegoCustomVideoCaptureHandler
 
     // SDK 内部实现的、同样实现 ZegoVideoCaptureDevice.Client 协议的客户端，用于通知SDK采集结果
     // The client implemented inside the SDK and also implementing the ZegoVideoCaptureDevice.Client protocol is used to notify the SDK of the results
-    FURenderer mFurenderer = null;
+    FURenderKit mFURenderKit = FURenderKit.getInstance();
 
     private TextureView mView = null;
     private SurfaceTexture mTexture = null;
@@ -83,9 +87,6 @@ public class VideoCaptureFromCamera extends IZegoCustomVideoCaptureHandler
     private final Object pendingCameraRestartLock = new Object();
     private volatile boolean pendingCameraRestart = false;
 
-    public VideoCaptureFromCamera(FURenderer furenderer) {
-        this.mFurenderer = furenderer;
-    }
 
     /**
      * 初始化资源，必须实现
@@ -103,7 +104,6 @@ public class VideoCaptureFromCamera extends IZegoCustomVideoCaptureHandler
 
         cameraThreadHandler.post(() -> {
             Log.e("VideoCamera:", "onSurfaceCreated cameraThread: " + Thread.currentThread().getName());
-            mFurenderer.onSurfaceCreated();
             setFrameRate(15);
             setResolution(720, 1280);
         });
@@ -209,7 +209,7 @@ public class VideoCaptureFromCamera extends IZegoCustomVideoCaptureHandler
                 // 释放camera资源
                 // Free camera resources
                 Log.e("VideoCamera:", "onSurfaceDestroyed cameraThread: " + Thread.currentThread().getName());
-                mFurenderer.onSurfaceDestroyed();
+                mFURenderKit.release();
                 releaseCam();
                 barrier.countDown();
             }
@@ -571,9 +571,8 @@ public class VideoCaptureFromCamera extends IZegoCustomVideoCaptureHandler
         return 0;
     }
 
-    ByteBuffer byteBuffer;
-    private byte[] mReadBack;
-    int i = 0;
+    private ByteBuffer fuOutByteBuffer;
+    private int i = 0;
 
     // 预览视频帧回调
     // Preview video frame callback
@@ -613,19 +612,19 @@ public class VideoCaptureFromCamera extends IZegoCustomVideoCaptureHandler
         } else {
             now = TimeUnit.MILLISECONDS.toNanos(SystemClock.elapsedRealtime());
         }
-        if (mReadBack == null) {
-            mReadBack = new byte[data.length];
-        }
-        mFurenderer.onDrawFrame(data, mWidth, mHeight, mReadBack, mWidth, mHeight);
-        // 将采集的数据传给ZEGO SDK
-        // Pass the collected data to ZEGO SDK
-        if (byteBuffer == null) {
-            byteBuffer = ByteBuffer.allocateDirect(mReadBack.length);
-        }
-        byteBuffer.put(mReadBack);
-        byteBuffer.flip();
 
-        zegoExpressEngine.sendCustomVideoCaptureRawData(byteBuffer, mReadBack.length, param, now);
+        FURenderInputData fuRenderInputData = new FURenderInputData(mWidth, mHeight);
+        fuRenderInputData.setImageBuffer(new FURenderInputData.FUImageBuffer(FUInputBufferEnum.FU_FORMAT_NV21_BUFFER, data));
+        FURenderOutputData fuRenderOutputData = mFURenderKit.renderWithInput(fuRenderInputData);
+        byte[] fuOutBytes = fuRenderOutputData.getImage().getBuffer();
+        if (fuOutByteBuffer == null) {
+            fuOutByteBuffer = ByteBuffer.allocate(fuOutBytes.length);
+        }
+        fuOutByteBuffer.reset();
+        fuOutByteBuffer.put(fuOutBytes);
+        fuOutByteBuffer.flip();
+
+        zegoExpressEngine.sendCustomVideoCaptureRawData(fuOutByteBuffer, fuOutBytes.length, param, now);
 
         // 实现camera预览时的内存复用
         // Memory reuse during camera preview

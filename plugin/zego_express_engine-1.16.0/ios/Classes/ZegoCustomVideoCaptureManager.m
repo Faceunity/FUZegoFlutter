@@ -10,7 +10,9 @@
 #import "ZegoExpressEngineMethodHandler.h"
 #import "ZegoLog.h"
 #import <ZegoExpressEngine/ZegoExpressEngine.h>
-#import "FUManager.h"
+#import <FURenderKit/FURenderKit.h>
+#import "FUTestRecorder.h"
+
 @interface ZegoCustomVideoCaptureClient()
 
 @property (nonatomic, assign)ZegoPublishChannel channel;
@@ -83,6 +85,9 @@
         //_timers = [NSMutableDictionary dictionary];
         _clients = [NSMutableDictionary dictionary];
         _delegates = [NSMapTable strongToWeakObjectsMapTable];
+        
+        [[FUTestRecorder shareRecorder] setupRecord];
+//        [[FUTestRecorder shareRecorder] setupRecordInterVal];
     }
     return self;
 }
@@ -128,14 +133,16 @@
 - (void)captureDevice:(id<ZGCaptureDevice>)device didCapturedData:(CVPixelBufferRef)data presentationTimeStamp:(CMTime)timeStamp {
     
     // ⭐️ Processing video frame data with FaceUnity
+    [[FUTestRecorder shareRecorder] processFrameWithLog];
+//    [[FUTestRecorder shareRecorder] processFrameStart];
     FURenderInput *input = [[FURenderInput alloc] init];
     input.renderConfig.imageOrientation = FUImageOrientationUP;
     input.pixelBuffer = data;
     //开启重力感应，内部会自动计算正确方向，设置fuSetDefaultRotationMode，无须外面设置
     input.renderConfig.gravityEnable = YES;
-    FURenderOutput *output = [[FUManager shareManager] renderWithInput:input];
+    FURenderOutput *output = [[FURenderKit shareRenderKit] renderWithInput:input];
     CVPixelBufferRef processedPixelBuffer = output.pixelBuffer;
-    
+//    [[FUTestRecorder shareRecorder] processFrameEnd];
     
     for(ZegoCustomVideoCaptureClient *client in self.clients.allValues) {
         [client sendCVPixelBuffer:processedPixelBuffer timestamp:timeStamp];

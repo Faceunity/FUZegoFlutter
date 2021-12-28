@@ -33,7 +33,7 @@ dependencies:
   
   #相芯
   faceunity_ui:
-    path: faceunity_ui
+    path: FaceUnityUI
 
 dev_dependencies:
   flutter_test:

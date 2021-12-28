@@ -1,7 +1,12 @@
 package im.zego.capture;
 
+import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
@@ -15,13 +20,18 @@ import android.view.View;
 
 import androidx.annotation.RequiresApi;
 
+import com.faceunity.core.entity.FURenderInputData;
+import com.faceunity.core.entity.FURenderOutputData;
+import com.faceunity.core.enumeration.FUInputTextureEnum;
+import com.faceunity.core.enumeration.FUTransformMatrixEnum;
+import com.faceunity.core.faceunity.FURenderKit;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import im.zego.faceunity.FURenderer;
 import im.zego.ve_gl.EglBase;
 import im.zego.ve_gl.EglBase14;
 import im.zego.ve_gl.GlRectDrawer;
@@ -103,12 +113,42 @@ public class VideoCaptureFromCamera2 extends IZegoCustomVideoCaptureHandler impl
     private EglBase captureEglBase = null;
     private GlRectDrawer captureDrawer = null;
     private float[] mCaptureMatrix = new float[16];
-    private FURenderer fuRenderer;
+    private FURenderKit mFURenderKit = FURenderKit.getInstance();
+    private FURenderInputData mFURenderInputData;
     private TextureView mTextureView = null;
 
-    public VideoCaptureFromCamera2(FURenderer furenderer) {
-        this.fuRenderer = furenderer;
+    private SensorManager mSensorManager;
+    private Sensor mSensor;
+    private int deviceOrientation = 90;
+
+    public VideoCaptureFromCamera2(Context context) {
+        mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
     }
+
+    /**
+     * 内置陀螺仪
+     */
+    private SensorEventListener mSensorEventListener = new SensorEventListener() {
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                float x = event.values[0];
+                float y = event.values[1];
+                if (Math.abs(x) > 3 || Math.abs(y) > 3) {
+                    if (Math.abs(x) > Math.abs(y)) {
+                        deviceOrientation = x > 0 ? 0 : 180;
+                    } else {
+                        deviceOrientation = y > 0 ? 90 : 270;
+                    }
+
+                }
+            }
+        }
+    };
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
@@ -130,7 +170,7 @@ public class VideoCaptureFromCamera2 extends IZegoCustomVideoCaptureHandler impl
 
                 }
             }, 2000);
-
+            mSensorManager.registerListener(mSensorEventListener, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
 
@@ -144,7 +184,6 @@ public class VideoCaptureFromCamera2 extends IZegoCustomVideoCaptureHandler impl
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void allocateAndStart() {
         Log.d(TAG, "allocateAndStart");
-        fuRenderer.onSurfaceCreated();
         mThread = new HandlerThread("camera-cap");
         mThread.start();
         // 创建camera异步消息处理handler
@@ -195,7 +234,8 @@ public class VideoCaptureFromCamera2 extends IZegoCustomVideoCaptureHandler impl
         if (ZegoPublishChannel.MAIN == channel) {
             stopPreview();
             stopAndDeAllocate();
-            fuRenderer.onSurfaceDestroyed();
+            mFURenderKit.release();
+            mSensorManager.unregisterListener(mSensorEventListener);
         }
     }
 
@@ -1008,7 +1048,16 @@ public class VideoCaptureFromCamera2 extends IZegoCustomVideoCaptureHandler impl
 
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
-            int zegoTextureId = fuRenderer.onDrawFrame(textureId, width, height);
+            if (mFURenderInputData == null) {
+                mFURenderInputData = new FURenderInputData(width, height);
+                mFURenderKit.setUseTexAsync(true);
+            }
+            mFURenderInputData.setTexture(new FURenderInputData.FUTexture(FUInputTextureEnum.FU_ADM_FLAG_COMMON_TEXTURE, textureId));
+            mFURenderInputData.getRenderConfig().setInputTextureMatrix(FUTransformMatrixEnum.CCROT0);
+            mFURenderInputData.getRenderConfig().setDeviceOrientation(deviceOrientation);
+            mFURenderInputData.getRenderConfig().setOutputMatrix(FUTransformMatrixEnum.CCROT0_FLIPVERTICAL);
+            FURenderOutputData fuRenderOutputData = mFURenderKit.renderWithInput(mFURenderInputData);
+            int zegoTextureId = fuRenderOutputData.getTexture().getTexId();
             // 绘制rgb格式图像
             // Draw rgb format image
             captureDrawer.drawRgb(zegoTextureId, mCaptureMatrix, width, height,

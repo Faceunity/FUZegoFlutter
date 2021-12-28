@@ -19,7 +19,6 @@
 #import "ZegoLog.h"
 #import <objc/message.h>
 #import "ZGCaptureDeviceCamera.h"
-#import "FUManager.h"
 
 @interface ZegoExpressEngineMethodHandler ()<ZegoCustomVideoCaptureDelegate>
 
@@ -87,9 +86,6 @@
     if (!self.enablePlatformView) {
         [[ZegoTextureRendererController sharedInstance] initController];
     }
-    
-    [FUManager shareManager];
-    [FUManager registerEventHandle:sink];
 
     ZGLog(@"[createEngine] platform:iOS, enablePlatformView:%@, sink: %p, appID:%u, appSign:%@, isTestEnv:%@, scenario:%d", _enablePlatformView ? @"true" : @"false", sink, appID, appSign, isTestEnv ? @"true" : @"false", scenario);
     
@@ -1481,7 +1477,7 @@
     ZegoMediaPlayer *mediaPlayer = self.mediaPlayerMap[index];
 
     if (mediaPlayer) {
-        int volume = mediaPlayer.volume;
+        int volume = mediaPlayer.playVolume;
         result(@(volume));
     } else {
         result(@(0));

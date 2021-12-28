@@ -17,7 +17,7 @@ A new Flutter plugin.
   s.public_header_files = 'Classes/**/*.h'
   s.static_framework = true
   s.dependency 'Flutter'
-  s.dependency 'ZegoExpressEngine', '1.16.0'
+  s.dependency 'ZegoExpressEngine', '2.7.0'
   s.dependency 'FURenderKit'
   s.dependency 'MJExtension', '3.0.15.1'
   s.platform = :ios, '8.0'

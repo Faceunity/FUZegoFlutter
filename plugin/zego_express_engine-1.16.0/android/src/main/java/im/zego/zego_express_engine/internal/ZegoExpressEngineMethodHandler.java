@@ -13,6 +13,10 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.util.Log;
 
+import com.faceunity.core.callback.OperateCallback;
+import com.faceunity.core.faceunity.FURenderManager;
+
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -22,12 +26,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
+import im.zego.authpack;
 import im.zego.capture.ICaptureCamera;
 import im.zego.capture.VideoCaptureFromCamera;
 import im.zego.capture.VideoCaptureFromCamera2;
-import im.zego.faceunity.FURenderer;
-import im.zego.faceunity.FURenderer.OnTrackingStatusChangedListener;
-import im.zego.faceunity.ModelParams;
 import im.zego.zegoexpress.ZegoAudioEffectPlayer;
 import im.zego.zegoexpress.ZegoExpressEngine;
 import im.zego.zegoexpress.ZegoMediaPlayer;
@@ -114,8 +116,6 @@ public class ZegoExpressEngineMethodHandler {
 
     private static HashMap<Integer, ZegoAudioEffectPlayer> audioEffectPlayerHashMap = new HashMap<>();
 
-    private static FURenderer mFURender;
-
     // 自定义采集
     private static ICaptureCamera sCaptureCamera;
 
@@ -138,8 +138,6 @@ public class ZegoExpressEngineMethodHandler {
             application = (Application) reg.context();
             textureRegistry = reg.textures();
         }
-
-        FURenderer.initFURenderer(application);
 
         registrar = reg;
         pluginBinding = binding;
@@ -169,22 +167,19 @@ public class ZegoExpressEngineMethodHandler {
     }
 
     private static void createFURender(Context context) {
-        // 创建 faceUnity 美颜实例
-        mFURender = new FURenderer
-                .Builder(context)
-                .inputTextureType(0)
-                .setOnFUDebugListener(sOnFUDebugListener)
-                .setOnTrackingStatusChangedListener(sOnTrackingStatusChangedListener)
-                .build();
+        FURenderManager.registerFURender(application, authpack.A(), new OperateCallback() {
+            @Override
+            public void onSuccess(int code, @NotNull String msg) {
+                Log.d("registerFURender", "success:" + msg);
+            }
+
+            @Override
+            public void onFail(int code, @NotNull String msg) {
+                Log.e("registerFURender", "errCode: " + code + "   errMsg: " + msg);
+            }
+        });
     }
 
-    private static OnTrackingStatusChangedListener sOnTrackingStatusChangedListener = (status) -> {
-        Log.i(TAG, "OnTrackingStatusChangedListener status->" + status);
-    };
-
-    private static FURenderer.OnFUDebugListener sOnFUDebugListener = (fps, renderTime) -> {
-        Log.i(TAG, "sOnFUDebugListener fps->" + fps + ", renderTime->" + renderTime);
-    };
 
     @SuppressWarnings("unused")
     public static void destroyEngine(MethodCall call, Result result) {
@@ -194,15 +189,6 @@ public class ZegoExpressEngineMethodHandler {
         result.success(null);
     }
 
-    @SuppressWarnings("unused")
-    public static void fuItemSetParam(MethodCall call, Result result) {
-
-        String name = call.argument("name");
-        float param = floatValue(call.argument("param"));
-        Log.e(TAG, "fuItemSetParam: name " + name + " param " + param);
-        ModelParams.setItemParam(name, param);
-        result.success(null);
-    }
 
     @SuppressWarnings({"unused", "unchecked"})
     public static void setEngineConfig(MethodCall call, Result result) {
@@ -1509,11 +1495,11 @@ public class ZegoExpressEngineMethodHandler {
                     ZegoPublishChannel.getZegoPublishChannel(channel));
             Log.e(TAG, "enableCustomVideoCapture: " + config.bufferType.name() + " value " + config.bufferType.value());
             if (config.bufferType == ZegoVideoBufferType.SURFACE_TEXTURE) {
-                VideoCaptureFromCamera2 camera = new VideoCaptureFromCamera2((mFURender));
+                VideoCaptureFromCamera2 camera = new VideoCaptureFromCamera2(application);
                 videoCaptureFromCamera = camera;
                 sCaptureCamera = camera;
             } else {
-                VideoCaptureFromCamera camera = new VideoCaptureFromCamera((mFURender));
+                VideoCaptureFromCamera camera = new VideoCaptureFromCamera();
                 videoCaptureFromCamera = camera;
                 sCaptureCamera = camera;
             }
@@ -1858,47 +1844,6 @@ public class ZegoExpressEngineMethodHandler {
         }
     }
 
-    @SuppressWarnings("unused")
-    public static void updateBeautiful(MethodCall call, Result result) {
-
-        Log.i("zego", "updateBeautiful param -> " + call.arguments);
-
-        Double beautyToothLevel = call.argument("beautyToothLevel");
-        Double jewLevel = call.argument("jewLevel");
-        Double blurLevel = call.argument("blurLevel");
-        Double whiteLevel = call.argument("whiteLevel");
-        Double redLevel = call.argument("redLevel");
-        Double filterLevel = call.argument("filterLevel");
-        Integer blurShape = call.argument("blurShape");
-        Double thinningLevel = call.argument("thinningLevel");
-        String filter = call.argument("filter");
-        Double foreheadLevel = call.argument("foreheadLevel");
-        Double mouthLevel = call.argument("mouthLevel");
-        Double enlargingLevel = call.argument("enlargingLevel");
-        Integer faceShape = call.argument("faceShape");
-        Double noseLevel = call.argument("noseLevel");
-        Double eyelightingLevel = call.argument("eyelightingLevel");
-
-
-        mFURender.onFilterLevelSelected(filterLevel != null ? filterLevel.floatValue() : 0);
-        mFURender.onFilterNameSelected(filter);
-        mFURender.onBlurLevelSelected(blurLevel != null ? blurLevel.floatValue() : 0);
-        mFURender.onIntensityMouthSelected(mouthLevel != null ? mouthLevel.floatValue() : 0);
-        mFURender.onIntensityNoseSelected(noseLevel != null ? noseLevel.floatValue() : 0);
-        mFURender.onToothWhitenSelected(beautyToothLevel != null ? beautyToothLevel.floatValue() : 0);
-        mFURender.onEyeBrightSelected(eyelightingLevel != null ? eyelightingLevel.floatValue() : 0);
-        mFURender.onEyeEnlargeSelected(enlargingLevel != null ? enlargingLevel.floatValue() : 0);
-        mFURender.onCheekThinningSelected(thinningLevel != null ? thinningLevel.floatValue() : 0);
-        mFURender.onRedLevelSelected(redLevel != null ? redLevel.floatValue() : 0);
-        mFURender.onColorLevelSelected(whiteLevel != null ? whiteLevel.floatValue() : 0);
-        mFURender.onIntensityForeheadSelected(foreheadLevel != null ? foreheadLevel.floatValue() : 0);
-        mFURender.onIntensityChinSelected(jewLevel != null ? jewLevel.floatValue() : 0);
-        mFURender.onHeavyBlurSelected(blurShape != null ? blurShape.floatValue() : 0);
-        mFURender.onFaceShapeSelected(faceShape != null ? faceShape.floatValue() : 0);
-
-
-        result.success(null);
-    }
 
 
     @SuppressWarnings("unused")

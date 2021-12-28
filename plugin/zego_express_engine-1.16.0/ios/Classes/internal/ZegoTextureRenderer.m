@@ -431,6 +431,7 @@
         [self setupVAO:width height:height];
 
     CVPixelBufferRef processBuffer;
+#warning 每一帧都创建 processBuffer, 是否可以创建一个全局的processBuffer ，然后往里面写内容。这样每一帧都省去创建和销毁操作？
     CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &processBuffer);
     if(ret != kCVReturnSuccess)
         return;
@@ -519,7 +520,7 @@
 - (void)createTexture:(CVOpenGLESTextureRef *)texture FromPixelBuffer:(CVPixelBufferRef)pixelBuffer {
     int width = (int)CVPixelBufferGetWidth(pixelBuffer);
     int height = (int)CVPixelBufferGetHeight(pixelBuffer);
-    
+
     CVReturn err = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
                                                                 m_pTexCache,
                                                                 pixelBuffer,
