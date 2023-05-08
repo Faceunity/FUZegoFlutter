@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:zego_express_engine/zego_express_engine.dart';
+import 'config.dart';
 
 class FUPullInfo extends StatelessWidget {
   final String roomId;
@@ -31,9 +32,6 @@ class FUPullInfoContent extends StatefulWidget {
 class _FUPullInfoContentState extends State<FUPullInfoContent> {
   int _previewViewID = -1;
   Widget _previewViewWidget;
-  int appID = 1848335148;
-  String appSign =
-      "80d00dec39ce0b9ea120e376e2ae53403beff4be8aefe459f2e615363eccb0ac";
 
   @override
   void initState() {
@@ -61,7 +59,7 @@ class _FUPullInfoContentState extends State<FUPullInfoContent> {
   // 2. 登录房间
   void loginRoom() {
     // 创建用户对象
-    ZegoUser user = ZegoUser.id("user2");
+    ZegoUser user = ZegoUser.id("user-${DateTime.now().microsecond}");
     // 开始登录房间
     ZegoExpressEngine.instance.loginRoom(widget.roomId, user);
   }

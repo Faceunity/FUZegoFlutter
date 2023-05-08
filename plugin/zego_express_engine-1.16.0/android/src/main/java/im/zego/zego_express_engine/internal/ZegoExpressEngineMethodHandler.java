@@ -13,10 +13,9 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.util.Log;
 
-import com.faceunity.core.callback.OperateCallback;
 import com.faceunity.core.faceunity.FURenderManager;
+import com.faceunity.core.utils.FULogger;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -26,10 +25,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
-import im.zego.authpack;
 import im.zego.capture.ICaptureCamera;
 import im.zego.capture.VideoCaptureFromCamera;
 import im.zego.capture.VideoCaptureFromCamera2;
+import im.zego.faceunity.FaceUnityExtension;
 import im.zego.zegoexpress.ZegoAudioEffectPlayer;
 import im.zego.zegoexpress.ZegoExpressEngine;
 import im.zego.zegoexpress.ZegoMediaPlayer;
@@ -167,17 +166,8 @@ public class ZegoExpressEngineMethodHandler {
     }
 
     private static void createFURender(Context context) {
-        FURenderManager.registerFURender(application, authpack.A(), new OperateCallback() {
-            @Override
-            public void onSuccess(int code, @NotNull String msg) {
-                Log.d("registerFURender", "success:" + msg);
-            }
-
-            @Override
-            public void onFail(int code, @NotNull String msg) {
-                Log.e("registerFURender", "errCode: " + code + "   errMsg: " + msg);
-            }
-        });
+        FaceUnityExtension.judgeDeviceLeve();
+        FURenderManager.setKitDebug(FULogger.LogLevel.TRACE);
     }
 
 

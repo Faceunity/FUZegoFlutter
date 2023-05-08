@@ -32,6 +32,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import im.zego.faceunity.FaceUnityExtension;
 import im.zego.ve_gl.EglBase;
 import im.zego.ve_gl.EglBase14;
 import im.zego.ve_gl.GlRectDrawer;
@@ -399,6 +400,7 @@ public class VideoCaptureFromCamera2 extends IZegoCustomVideoCaptureHandler impl
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        FURenderKit.getInstance().releaseSafe();
         Log.d(TAG, "stopCapture done");
 
         return 0;
@@ -1048,9 +1050,10 @@ public class VideoCaptureFromCamera2 extends IZegoCustomVideoCaptureHandler impl
 
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
+            FaceUnityExtension.execute();
+
             if (mFURenderInputData == null) {
                 mFURenderInputData = new FURenderInputData(width, height);
-                mFURenderKit.setUseTexAsync(true);
             }
             mFURenderInputData.setTexture(new FURenderInputData.FUTexture(FUInputTextureEnum.FU_ADM_FLAG_COMMON_TEXTURE, textureId));
             mFURenderInputData.getRenderConfig().setInputTextureMatrix(FUTransformMatrixEnum.CCROT0);
@@ -1058,6 +1061,7 @@ public class VideoCaptureFromCamera2 extends IZegoCustomVideoCaptureHandler impl
             mFURenderInputData.getRenderConfig().setOutputMatrix(FUTransformMatrixEnum.CCROT0_FLIPVERTICAL);
             FURenderOutputData fuRenderOutputData = mFURenderKit.renderWithInput(mFURenderInputData);
             int zegoTextureId = fuRenderOutputData.getTexture().getTexId();
+            GLES20.glFinish();
             // 绘制rgb格式图像
             // Draw rgb format image
             captureDrawer.drawRgb(zegoTextureId, mCaptureMatrix, width, height,

@@ -65,7 +65,8 @@ public class GlRectDrawer {
                     + "uniform sampler2D rgb_tex;\n"
                     + "\n"
                     + "void main() {\n"
-                    + "  gl_FragColor = texture2D(rgb_tex, interp_tc);\n"
+                    + "  vec4 color = texture2D(rgb_tex, interp_tc);\n"
+                    + "  gl_FragColor = vec4(color.r, color.g, color.b, 1);\n"
                     + "}\n";
 
     private static final String OES_FRAGMENT_SHADER_STRING =

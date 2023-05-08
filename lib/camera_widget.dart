@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:zego_express_engine/zego_express_engine.dart';
 
+import 'config.dart';
+
 class CameraWidgetController {
   final String roomId;
   final String streamId;
@@ -85,7 +87,7 @@ class CameraWidgetController {
     }
 
     // 创建用户对象
-    ZegoUser user = ZegoUser.id("user1");
+    ZegoUser user = ZegoUser.id("user-${DateTime.now().microsecond}");
     // 开始登陆房间
     ZegoExpressEngine.instance.loginRoom(this.roomId, user);
 
@@ -99,6 +101,7 @@ class CameraWidgetController {
       _textureId = value;
       _previewViewWidget = Texture(textureId: _textureId);
       ZegoCanvas previewCanvas = ZegoCanvas.view(_textureId);
+      previewCanvas.viewMode = ZegoViewMode.ScaleToFill;
       await ZegoExpressEngine.instance.startPreview(canvas: previewCanvas);
 
       createCallback?.call();
@@ -108,8 +111,7 @@ class CameraWidgetController {
 
   Future<void> _initZego() async {
     await ZegoExpressEngine.createEngine(
-        1848335148,
-        '80d00dec39ce0b9ea120e376e2ae53403beff4be8aefe459f2e615363eccb0ac',
+        appID, appSign,
         true,
         ZegoScenario.General);
 

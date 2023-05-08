@@ -178,7 +178,7 @@ public final class EglBase14 extends EglBase {
             }
 
             if (!EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
-                throw new RuntimeException(
+                Log.e("EglBase14",
                         "eglMakeCurrent failed: 0x" + Integer.toHexString(EGL14.eglGetError()));
             }
         }
