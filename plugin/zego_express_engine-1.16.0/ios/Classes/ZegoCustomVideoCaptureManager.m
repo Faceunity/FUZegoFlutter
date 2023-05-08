@@ -132,6 +132,26 @@
 
 - (void)captureDevice:(id<ZGCaptureDevice>)device didCapturedData:(CVPixelBufferRef)data presentationTimeStamp:(CMTime)timeStamp {
     
+    if (![FURenderKit shareRenderKit].beauty || ![FURenderKit shareRenderKit].beauty.enable) {
+        //无需处理人脸置信度和磨皮相关
+    } else {
+        if ([FURenderKit devicePerformanceLevel] == FUDevicePerformanceLevelHigh) {
+            // 根据人脸置信度设置不同磨皮效果
+            CGFloat score = [FUAIKit fuFaceProcessorGetConfidenceScore:0];
+            if (score > 0.95) {
+                [FURenderKit shareRenderKit].beauty.blurType = 3;
+                [FURenderKit shareRenderKit].beauty.blurUseMask = YES;
+            } else {
+                [FURenderKit shareRenderKit].beauty.blurType = 2;
+                [FURenderKit shareRenderKit].beauty.blurUseMask = NO;
+            }
+        } else {
+            // 设置精细磨皮效果
+            [FURenderKit shareRenderKit].beauty.blurType = 2;
+            [FURenderKit shareRenderKit].beauty.blurUseMask = NO;
+        }
+    }
+    
     // ⭐️ Processing video frame data with FaceUnity
     [[FUTestRecorder shareRecorder] processFrameWithLog];
 //    [[FUTestRecorder shareRecorder] processFrameStart];

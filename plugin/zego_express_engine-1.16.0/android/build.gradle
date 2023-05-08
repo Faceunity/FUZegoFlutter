@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.0'
+        classpath 'com.android.tools.build:gradle:4.2.1'
     }
 }
 
@@ -43,7 +43,7 @@ android {
 dependencies {
     // for other module visit
     api 'im.zego:express-video:1.16.0'
-    implementation 'com.faceunity:core:8.0.0'
-    implementation 'com.faceunity:model:8.0.0'
+    implementation 'com.faceunity:core:8.5.0'
+    implementation 'com.faceunity:model:8.5.0'
     implementation 'androidx.annotation:annotation:1.1.0'
 }

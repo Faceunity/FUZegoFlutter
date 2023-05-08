@@ -26,6 +26,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import im.zego.faceunity.FaceUnityExtension;
 import im.zego.zegoexpress.ZegoExpressEngine;
 import im.zego.zegoexpress.callback.IZegoCustomVideoCaptureHandler;
 import im.zego.zegoexpress.constants.ZegoPublishChannel;
@@ -605,6 +606,8 @@ public class VideoCaptureFromCamera extends IZegoCustomVideoCaptureHandler
         param.strides[1] = mWidth;
         param.format = ZegoVideoFrameFormat.NV21;
         param.rotation = mCamInfo.orientation;
+
+        FaceUnityExtension.execute();
 
         long now;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
