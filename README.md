@@ -1,24 +1,24 @@
-# fluttedemo
+# Zego Express Example Topics Flutter
 
-A new Flutter application.
+[English](README.md) | [中文](README_zh.md)
 
-## Getting Started
+Demonstrates how to use the [zego_express_engine]((https://pub.dev/packages/zego_express_engine)) plugin.
 
-This project is a starting point for a Flutter application.
+> Ref: zego_express_engine
+>
+> - pub.dev: [https://pub.dev/packages/zego_express_engine](https://pub.dev/packages/zego_express_engine)
+> - Github: [https://github.com/zegoim/zego-express-flutter-sdk](https://github.com/zegoim/zego-express-flutter-sdk)
 
-A few resources to get you started if this is your first Flutter project:
+ZegoExpressEngine Audio/Video Flutter SDK is a flutter plugin wrapper based on [ZegoExpressEngine](https://doc-en.zego.im/en/693.html) native Android / iOS SDK, providing live video and real-time audio/video services. It only needs 4 lines of code and can be easily accessed in 30 minutes.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+Learn more about the solution: [https://www.zego.im](https://www.zego.im)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Running the sample code
 
+The AppID and AppSign required for SDK initialization are missing from the downloaded Demo source. Please refer to [Instructions for getting AppID and AppSign](https://console.zego.im/dashboard) to get AppID and AppSign.
 
+## Related demo
 
+**[https://github.com/zegoim/zego-express-example-screen-capture-flutter](https://github.com/zegoim/zego-express-example-screen-capture-flutter)**
 
-
-这个demo的UI实现**比较简单，需要客户自己开发**，主要是实现了**美肤**的几个功能，别的需要客户自己在flutter上实现。
-
-在flutter UI 上修改参数后，会传到 `ModelParams.java`这个文件中，`FURenderer.java`文件中会读取内容进行设置。
+    📲 An example demo that implements screen capture and live broadcast on Android/iOS.
