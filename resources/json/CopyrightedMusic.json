@@ -1,0 +1,66 @@
+{
+    "/playlist/category": {
+      "describe": "Playlist Category List"
+    },
+    "/playlist/classify": {
+      "describe": "Playlist List"
+      ,"category_id": "77"
+      ,"page": 1
+      ,"size": 10
+    },
+    "/playlist/song": {
+      "describe": "Playlist Song",
+      "playlist_id": "collection_3_1085322500_243_0",
+      "page": 1,
+      "size": 10
+    },
+    "/song/infos": {
+      "describe": "Batch Query Song Information",
+      "songs_id": ["28466292","287915293","257333192"]
+    },
+    "/search/tips": {
+      "describe": "Search Tips",
+      "keyword": "周杰"
+    },
+    "/search/song": {
+      "describe": "Search For Songs",
+      "keyword": "周杰",
+      "page": 1,
+      "size": 10
+    },
+    "/top/song": {
+      "describe": "Chart Songs",
+      "top_id": "8888",
+      "page": 1,
+      "size": 10
+    },
+    "/song/copyright": {
+      "describe": "Song Permissions",
+      "songs_id": ["28466292","287915293","257333192"]
+    },
+    "/song/accompany/krc/segment": {
+      "describe": "Get Lyrics Segment",
+      "song_id": "28466292"
+    },
+    "/song/accompany/clip_info": {
+      "describe": "Get The Accompaniment Orgasm Time Point",
+      "song_id": "28466292"
+    },
+    "/song/accompany/clip_url/status": {
+      "describe": "Determine If There Is An Accompaniment Climax",
+      "song_id": "28466292"
+    },
+    "/song/extra": {
+      "describe": "Get Additional Song Information",
+      "song_id": "28466292"
+    },
+    "/tag/list": {
+      "describe": "Get List Of Tags"
+    },
+    "/tag/song": {
+      "describe": "Get Songs Based On Tags",
+      "tag_id": "587",
+      "page":1,
+      "filter":[1]
+    }
+  }
