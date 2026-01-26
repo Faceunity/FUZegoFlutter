@@ -13,10 +13,8 @@ SkinModel _$SkinModelFromJson(Map<String, dynamic> json) => SkinModel(
       (json['defaultValue'] as num).toDouble(),
       json['defaultValueInMiddle'] as bool,
       (json['ratio'] as num).toDouble(),
-      (json['supportDeviceLevel'] as num).toInt(),
-      json['extra'] == null
-          ? null
-          : SkinExtraModel.fromJson(json['extra'] as Map<String, dynamic>),
+      json['differentiateDevicePerformance'] as bool,
+      json['needsNPUSupport'] as bool,
     );
 
 Map<String, dynamic> _$SkinModelToJson(SkinModel instance) => <String, dynamic>{
@@ -26,8 +24,8 @@ Map<String, dynamic> _$SkinModelToJson(SkinModel instance) => <String, dynamic>{
       'defaultValue': instance.defaultValue,
       'defaultValueInMiddle': instance.defaultValueInMiddle,
       'ratio': instance.ratio,
-      'supportDeviceLevel': instance.supportDeviceLevel,
-      'extra': instance.extra,
+      'differentiateDevicePerformance': instance.differentiateDevicePerformance,
+      'needsNPUSupport': instance.needsNPUSupport,
     };
 
 const _$BeautySkinEnumMap = {
@@ -43,25 +41,3 @@ const _$BeautySkinEnumMap = {
   BeautySkin.antiAcneSpot: 9,
   BeautySkin.clarity: 10,
 };
-
-SkinExtraModel _$SkinExtraModelFromJson(Map<String, dynamic> json) =>
-    SkinExtraModel(
-      json['key'] as String,
-      json['title'] as String,
-      (json['value'] as num).toDouble(),
-      (json['defaultValue'] as num).toDouble(),
-      json['leftText'] as String,
-      json['rightText'] as String,
-      (json['supportDeviceLevel'] as num).toInt(),
-    );
-
-Map<String, dynamic> _$SkinExtraModelToJson(SkinExtraModel instance) =>
-    <String, dynamic>{
-      'key': instance.key,
-      'title': instance.title,
-      'value': instance.value,
-      'defaultValue': instance.defaultValue,
-      'leftText': instance.leftText,
-      'rightText': instance.rightText,
-      'supportDeviceLevel': instance.supportDeviceLevel,
-    };

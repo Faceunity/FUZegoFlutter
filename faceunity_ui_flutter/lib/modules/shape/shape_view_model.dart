@@ -15,7 +15,7 @@ class ShapeViewModel extends ChangeNotifier {
 
   late List<ShapeModel> shapes = [];
   // 设备是否高性能机型
-  late int devicePerformanceLevel = DevicePerformanceLevel.levelTwo;
+  late bool highPerformanceDevice = true;
 
   int selectedIndex = -1;
 
@@ -39,9 +39,7 @@ class ShapeViewModel extends ChangeNotifier {
   }
 
   void initialize() async {
-    devicePerformanceLevel = await FaceunityPlugin.devicePerformanceLevel();
-    String fileName = devicePerformanceLevel == DevicePerformanceLevel.levelMinusOne ? "shape/beauty_shape_low.json" : "shape/beauty_shape.json";
-    String jsonString = await rootBundle.loadString(CommonUtil.bundleFileNamed(fileName));
+    String jsonString = await rootBundle.loadString(CommonUtil.bundleFileNamed("shape/beauty_shape.json"));
     final jsonData = json.decode(jsonString);
     List<ShapeModel> shapeModels = [];
     for (Map<String, dynamic> item in jsonData) {
@@ -49,7 +47,7 @@ class ShapeViewModel extends ChangeNotifier {
       shapeModels.add(shape);
     }
     shapes = shapeModels;
-
+    highPerformanceDevice = await FaceunityPlugin.isHighPerformanceDevice();
     recoverAllShapeValuesToDefault();
     notifyListeners();
   }

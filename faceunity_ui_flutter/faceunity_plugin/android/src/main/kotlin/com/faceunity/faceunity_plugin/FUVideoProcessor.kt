@@ -1,7 +1,7 @@
 package com.faceunity.faceunity_plugin
 
+import android.content.Context
 import android.opengl.EGL14
-import android.opengl.GLES20
 import android.util.Log
 import com.faceunity.core.entity.FURenderInputData
 import com.faceunity.core.enumeration.CameraFacingEnum
@@ -11,8 +11,6 @@ import com.faceunity.core.enumeration.FUTransformMatrixEnum
 import com.faceunity.core.faceunity.FUAIKit
 import com.faceunity.core.faceunity.FURenderKit
 import com.faceunity.core.model.facebeauty.FaceBeautyBlurTypeEnum
-import com.faceunity.core.program.ProgramTexture2dWithAlpha
-import com.faceunity.core.utils.GlUtil
 import kotlin.math.abs
 
 /**
@@ -29,10 +27,6 @@ object FUVideoProcessor {
     private var cameraFacingEnum = CameraFacingEnum.CAMERA_FRONT//相机
     private var enableRender = false
     private var highLeveDeice = false
-
-    private val mTextures = IntArray(1)
-    private val mFrameBuffers = IntArray(1)
-    private var programTexture2dWithAlpha: ProgramTexture2dWithAlpha? = null
 
     @JvmStatic
     fun onGLContextCreated() {
@@ -69,20 +63,13 @@ object FUVideoProcessor {
                     }
                 }
             }
-        val newTexId = FURenderKit.getInstance().renderWithInput(input).texture?.texId ?: textureId
-        return applyFilter(newTexId, width, height)
+        return FURenderKit.getInstance().renderWithInput(input).texture?.texId ?: return textureId
     }
 
     @JvmStatic
     fun onGLContextDestroy() {
         Log.d(TAG, "onGLContextDestroy: ${EGL14.eglGetCurrentContext()}")
         FURenderKit.getInstance().release()
-    }
-
-    fun release() {
-        mTextures[0] = 0
-        mFrameBuffers[0] = 0
-        programTexture2dWithAlpha = null
     }
 
     private fun cheekFaceNum() {
@@ -112,14 +99,8 @@ object FUVideoProcessor {
     }
 
 
-    // 90 -> 0
-    // 180 -> 90
-
-    // 0 -> 270
-    // 270 -> 180
     fun setDeviceOrientation(deviceOrientation: Int) {
-        val newDev = abs(360 + deviceOrientation - 90) % 360
-        this.deviceOrientation = newDev
+        this.deviceOrientation = abs(deviceOrientation - 90)
     }
 
     fun setCameraFacing(front: Boolean) {
@@ -128,17 +109,5 @@ object FUVideoProcessor {
 
     fun setHighLeveDeice(highLeveDeice: Boolean) {
         this.highLeveDeice = highLeveDeice
-    }
-    private fun applyFilter(texId: Int, width: Int, height: Int): Int {
-        if (mFrameBuffers[0] == 0) {
-            GlUtil.createFrameBuffers(mTextures, mFrameBuffers, width, height)
-        }
-        if (programTexture2dWithAlpha == null) {
-            programTexture2dWithAlpha = ProgramTexture2dWithAlpha()
-        }
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, mFrameBuffers[0])
-        programTexture2dWithAlpha?.drawFrame(texId, GlUtil.IDENTITY_MATRIX, GlUtil.IDENTITY_MATRIX)
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
-        return mTextures[0]
     }
 }

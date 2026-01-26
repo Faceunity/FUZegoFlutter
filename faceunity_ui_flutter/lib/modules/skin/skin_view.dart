@@ -3,6 +3,7 @@ import 'package:faceunity_ui_flutter/modules/skin/skin_model.dart';
 import 'package:faceunity_ui_flutter/modules/skin/skin_view_model.dart';
 import 'package:faceunity_ui_flutter/util/common_util.dart';
 import 'package:faceunity_ui_flutter/util/screen_util.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,11 +19,11 @@ class SkinView extends StatefulWidget {
 
 class SkinViewState extends State<SkinView> {
   SkinViewModel viewModel = SkinViewModel();
-
+  
   @override
   Widget build(BuildContext context) {
     double width = ScreenUtil.getScreenW(context);
-
+    
     return ChangeNotifierProvider(
       create: (context) {
         return viewModel;
@@ -31,11 +32,9 @@ class SkinViewState extends State<SkinView> {
         builder: (context, value, child) {
           double sliderValue = 0;
           bool defaulInMiddle = false;
-          SkinModel? skinModel;
           if (viewModel.skins.isNotEmpty && viewModel.selectedIndex >= 0) {
             sliderValue = viewModel.skins[viewModel.selectedIndex].currentValue / viewModel.skins[viewModel.selectedIndex].ratio;
             defaulInMiddle = viewModel.skins[viewModel.selectedIndex].defaultValueInMiddle;
-            skinModel = viewModel.skins[viewModel.selectedIndex];
           }
           return Container(
             color: const Color.fromARGB(200, 0, 0, 0),
@@ -45,27 +44,22 @@ class SkinViewState extends State<SkinView> {
                 verticalDirection: VerticalDirection.up,
                 children: [
                   _providerList(width),
-                  viewModel.selectedIndex >= 0 ?
+                  viewModel.selectedIndex >= 0 ? 
                   SizedBox(
                     height: 50,
-                    width: skinModel?.extra != null ? width - 30 : width - 112,
-                    child: Row(
-                      children: [
-                        if (skinModel?.extra != null) _expandSlider(100, 30, skinModel),
-                        Expanded(child: SliderView(
-                          value: sliderValue,
-                          defaulInMiddle: defaulInMiddle,
-                          onChanged: (value) {
-                            // 程度值变化
-                            viewModel.setSkinIntensity(value);
-                          },
-                          onChangeEnd: () {
-                            // 滑动结束，需要刷新列表
-                            setState(() {
-                            });
-                          },
-                        ))
-                      ],
+                    width: width - 112,
+                    child: SliderView(
+                      value: sliderValue,
+                      defaulInMiddle: defaulInMiddle,
+                      onChanged: (value) {
+                        // 程度值变化
+                        viewModel.setSkinIntensity(value);
+                      },
+                      onChangeEnd: () {
+                        // 滑动结束，需要刷新列表
+                        setState(() {
+                        });
+                      },
                     ),
                   ) : const SizedBox(
                     height: 50,
@@ -97,7 +91,7 @@ class SkinViewState extends State<SkinView> {
                 onPressed: () {
                   if (!isDefault) {
                     showAlertDialog(
-                      context: context,
+                      context: context, 
                       content: "是否将所有参数恢复到默认值",
                       comformPressed: () {
                         viewModel.recoverAllSkinValuesToDefault();
@@ -105,7 +99,7 @@ class SkinViewState extends State<SkinView> {
                     );
                     // viewModel.recoverAllSkinValuesToDefault();
                   }
-                },
+                }, 
                 child: Column(
                   children: [
                     SizedBox(
@@ -150,65 +144,20 @@ class SkinViewState extends State<SkinView> {
     );
   }
 
-  Widget _expandSlider(double width, double height, SkinModel? skinModel) {
-    if (skinModel?.extra == null) return const SizedBox();
-    SkinExtraModel extra = skinModel!.extra!;
-    bool selectedLeft = extra.value == extra.defaultValue;
-    return Container(
-      width: width,
-      height: height,
-      margin: const EdgeInsets.only(top: 8,bottom: 8, right: 10),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.white, width: 2.0),
-        borderRadius: const BorderRadius.all(Radius.circular(25.0)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  color: selectedLeft ? Colors.white : Colors.transparent,
-                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(25.0), bottomLeft: Radius.circular(25.0)),
-                ), alignment: Alignment.center,
-                child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        extra.value = 0.0;
-                        viewModel.setSkinExtra(extra);
-                      });
-                    }, child: Text(extra.leftText, style: TextStyle(fontSize: 11, color:  selectedLeft ? const Color.fromARGB(255, 9, 0, 23) : const Color.fromARGB(153, 255, 255, 255),),))),
-          ),
-          Expanded(
-            child: Container(
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  color: !selectedLeft ? Colors.white : Colors.transparent,
-                  borderRadius: const BorderRadius.only(topRight: Radius.circular(25.0), bottomRight: Radius.circular(25.0)),
-                ), alignment: Alignment.center,
-                child: InkWell(
-                    onTap: (){
-                      setState(() {
-                        if (viewModel.devicePerformanceLevel >= extra.supportDeviceLevel) {
-                          extra.value = 1.0;
-                          viewModel.setSkinExtra(extra);
-                        }else {
-                          showCommonToast(context: context, content: "${extra.title}功能仅支持在高端机型上使用");
-                        }
-                      });
-                    },
-                    child: Text(extra.rightText, style: TextStyle(fontSize: 11, color:  !selectedLeft ? const Color.fromARGB(255, 9, 0, 23) : const Color.fromARGB(153, 255, 255, 255),),))),
-          ),
-        ],
-      ),
-    );
-  }
-
-
   Widget _itemCell(int index) {
     SkinModel skin = viewModel.skins[index];
     String name = skin.name;
-    bool disabled = !_deviceCheck(skin);
+    bool needsNPU = skin.needsNPUSupport;
+    bool needsHighPerformance = skin.differentiateDevicePerformance;
+
+    bool disabled = false;
+    if (needsNPU) {
+      disabled = !viewModel.supportsNPU;
+    } else {
+      if (needsHighPerformance) {
+        disabled = !viewModel.highPerformanceDevice;
+      }
+    }
 
     String imageName;
     Color textColor = Colors.white;
@@ -223,7 +172,7 @@ class SkinViewState extends State<SkinView> {
         textColor = Colors.white;
       }
     }
-
+    
     return Opacity(
       opacity: disabled ? 0.6 : 1.0,
       child: TextButton(
@@ -236,9 +185,12 @@ class SkinViewState extends State<SkinView> {
               viewModel.setSelectedIndex(index);
             });
           } else {
-            showCommonToast(context: context, content: "${skin.name}功能仅支持在高端机型上使用");
+            if (needsNPU) {
+              // 提示仅支持 NPU 机型
+              showCommonToast(context: context, content: defaultTargetPlatform == TargetPlatform.iOS ? "该功能仅支持iPhoneXR及以上机型使用" : "该功能即将上线");
+            }
           }
-        },
+        }, 
         child: Column(
           children: [
             SizedBox(
@@ -261,9 +213,5 @@ class SkinViewState extends State<SkinView> {
         )
       ),
     );
-  }
-
-  bool _deviceCheck(SkinModel skin) {
-    return viewModel.isSupport(skin);
   }
 }

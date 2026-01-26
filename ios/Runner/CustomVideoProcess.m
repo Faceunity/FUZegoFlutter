@@ -42,19 +42,12 @@
                                  timestamp:(CMTime)timestamp
                                    channel:(ZGFlutterPublishChannel)channel {
     
-    if (fuIsLibraryInit() > 0) {
-        [FURenderKitManager updateBeautyBlurEffect];
-        FURenderInput *input = [[FURenderInput alloc] init];
-        input.renderConfig.imageOrientation = FUImageOrientationUP;
-        input.renderConfig.readBackToPixelBuffer = YES;
-        input.renderConfig.gravityEnable = YES;
-//        input.renderConfig.isFromFrontCamera = NO;
-//        input.renderConfig.isFromMirroredCamera = NO;
-        input.pixelBuffer = buffer;
-        [[FURenderKit shareRenderKit] renderWithInput:input];
-        
-        NSLog(@"----%d", fuHumanProcessorGetNumResults());
-    }
+    [FURenderKitManager updateBeautyBlurEffect];
+    FURenderInput *input = [[FURenderInput alloc] init];
+    input.renderConfig.imageOrientation = FUImageOrientationUP;
+    input.renderConfig.readBackToPixelBuffer = YES;
+    input.pixelBuffer = buffer;
+    [[FURenderKit shareRenderKit] renderWithInput:input];
     [[ZegoCustomVideoProcessManager sharedInstance] sendProcessedCVPixelBuffer:buffer timestamp:timestamp channel:channel];
 }
 

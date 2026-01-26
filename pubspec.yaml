@@ -18,19 +18,20 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=2.12.0 <4.0.0"
+  flutter: ">=1.12.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  zego_express_engine: ^3.15.0
+  zego_express_engine: ^3.19.1
   permission_handler: 8.1.6
   url_launcher: 6.0.1
   universal_io: 2.0.4
   cupertino_icons: 1.0.5
   path_provider: 2.0.1
   file_picker: 4.0.0
-  archive: ^3.6.1
+  archive: 3.3.1
   share_plus: 3.0.0
   faceunity_ui_flutter:
     path: faceunity_ui_flutter

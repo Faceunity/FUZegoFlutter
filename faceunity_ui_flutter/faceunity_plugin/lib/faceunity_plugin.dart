@@ -3,15 +3,21 @@ import 'package:flutter/services.dart';
 
 class FaceunityPlugin {
   static const methodChannel = MethodChannel('faceunity_plugin');
-
+  
   static Future<String?> getPlatformVersion() async {
     final version = await methodChannel.invokeMethod<String>('getPlatformVersion');
     return version;
   }
 
   // 设备是否高端机型
-  static Future<int> devicePerformanceLevel() async {
-    final int result = await methodChannel.invokeMethod("devicePerformanceLevel");
+  static Future<bool> isHighPerformanceDevice() async {
+    final bool result = await methodChannel.invokeMethod("isHighPerformanceDevice");
+    return result;
+  }
+
+  // 设备是否支持 NPU
+  static Future<bool> isNPUSupported() async {
+    final bool result = await methodChannel.invokeMethod("isNPUSupported");
     return result;
   }
 
@@ -40,7 +46,7 @@ class FaceunityPlugin {
   static Future<void> loadBeauty() async {
     await methodChannel.invokeMethod("loadBeauty");
   }
-
+  
   // 卸载美颜（释放内存）
   static Future<void> unloadBeauty() async {
     methodChannel.invokeMethod("unloadBeauty");
@@ -50,7 +56,7 @@ class FaceunityPlugin {
   static Future<void> loadBody() async {
     await methodChannel.invokeMethod("loadBody");
   }
-
+  
   // 卸载美体（释放内存）
   static Future<void> unloadBody() async {
     methodChannel.invokeMethod("unloadBody");
@@ -79,17 +85,5 @@ class FaceunityPlugin {
   /// Android使用
   static Future<void> setCameraPosition(bool front) async {
     await methodChannel.invokeMethod("setCameraPosition", {"front" : front});
-  }
-
-  // 被限制的skin功能
-  static Future<List<int>> restrictedSkinParams() async {
-    final List<dynamic> result = await methodChannel.invokeMethod("restrictedSkinParams");
-    try {
-      // Ensure the list contains integers
-      final List<int> intList = result.cast<int>();
-      return intList;
-    } on PlatformException catch (_) {
-      return [];
-    }
   }
 }

@@ -13,10 +13,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 
 /** FaceunityPlugin */
 class FaceunityPlugin : FlutterPlugin, MethodCallHandler{
@@ -32,7 +28,6 @@ class FaceunityPlugin : FlutterPlugin, MethodCallHandler{
     private val sensorHandler by lazy { SensorHandler() }
     private lateinit var context: Context
     private val fuVideoProcessor = FUVideoProcessor
-    private val mainScope = MainScope()
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "faceunity_plugin")
@@ -58,17 +53,16 @@ class FaceunityPlugin : FlutterPlugin, MethodCallHandler{
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
         sensorHandler.unregister()
-        mainScope.cancel()
     }
 
-    private fun methodCall(call: MethodCall, result: Result) {
+    private fun methodCall(call: MethodCall, @NonNull result: Result) {
         when (call.method) {
             "getPlatformVersion" -> {
                 result.success("Android ${android.os.Build.VERSION.RELEASE}")
             }
 
-            "devicePerformanceLevel" -> {
-                result.success(FaceunityKit.devicePerformanceLevel)
+            "isHighPerformanceDevice" -> {
+                result.success(FaceunityKit.devicePerformanceLevel == FuDeviceUtils.DEVICE_LEVEL_HIGH)
             }
 
             "isNPUSupported" -> {
@@ -85,7 +79,6 @@ class FaceunityPlugin : FlutterPlugin, MethodCallHandler{
             "setupRenderKit" -> setupRenderKit()
             "destoryRenderKit" -> destroyRenderKit()
             "setCameraPosition" -> setCameraPosition(call)
-            "restrictedSkinParams" -> restrictedSkinParams(call, result)
         }
     }
 
@@ -106,7 +99,6 @@ class FaceunityPlugin : FlutterPlugin, MethodCallHandler{
     private fun destroyRenderKit() {
         FaceunityKit.releaseKit()
         fuVideoProcessor.enableRender(false)
-        fuVideoProcessor.release()
     }
 
     private fun setCameraPosition(call: MethodCall) {
@@ -114,11 +106,5 @@ class FaceunityPlugin : FlutterPlugin, MethodCallHandler{
         val isFront = arguments?.get("front") as? Boolean
         isFront?.let { FUVideoProcessor.setCameraFacing(it) }
         FURenderKit.getInstance().clearCacheResource()
-    }
-
-    private fun restrictedSkinParams(call: MethodCall, result: Result) {
-        mainScope.launch(Dispatchers.IO) {
-            result.success(RestrictedSkinTool.restrictedSkinParams)
-        }
     }
 }

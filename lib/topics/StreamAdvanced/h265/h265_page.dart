@@ -11,6 +11,7 @@ import 'package:zego_express_example_topics_flutter/utils/user_id_helper.dart';
 
 class H265Page extends StatefulWidget {
   const H265Page({Key? key}) : super(key: key);
+
   @override
   _H265PageState createState() => _H265PageState();
 }
@@ -98,7 +99,9 @@ class _H265PageState extends State<H265Page> {
         ZegoVideoCodecID.Default,
         .0,
         .0,
-        .0);
+        .0,
+         0,
+         0);
     _playQuality_0 = ZegoPlayStreamQuality(
         .0,
         .0,
@@ -1268,6 +1271,7 @@ class ZegoDelegate {
   late int _playViewID_2;
   Widget? preWidget;
   Widget? playWidget;
+
   ZegoDelegate()
       : _preViewID = -1,
         _playViewID_0 = -1,

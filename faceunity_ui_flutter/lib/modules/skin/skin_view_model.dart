@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:faceunity_plugin/faceunity_plugin.dart';
 import 'package:faceunity_plugin/skin_plugin.dart';
@@ -16,8 +15,9 @@ class SkinViewModel extends ChangeNotifier {
 
   late List<SkinModel> skins = [];
   // 设备是否高性能机型
-  late int devicePerformanceLevel = DevicePerformanceLevel.levelTwo;
-  late List<int> blackList = [];
+  late bool highPerformanceDevice = true;
+  // 设备是否支持 NPU
+  late bool supportsNPU = false;
 
   int selectedIndex = -1;
 
@@ -42,12 +42,7 @@ class SkinViewModel extends ChangeNotifier {
   }
 
   void initialize() async {
-    devicePerformanceLevel = await FaceunityPlugin.devicePerformanceLevel();
-    if (Platform.isAndroid) {
-      blackList = await FaceunityPlugin.restrictedSkinParams();
-    }
-    String fileName = devicePerformanceLevel == DevicePerformanceLevel.levelMinusOne ? "skin/beauty_skin_low.json" : "skin/beauty_skin.json";
-    String jsonString = await rootBundle.loadString(CommonUtil.bundleFileNamed(fileName));
+    String jsonString = await rootBundle.loadString(CommonUtil.bundleFileNamed("skin/beauty_skin.json"));
     final jsonData = json.decode(jsonString);
     List<SkinModel> skinModels = [];
     for (Map<String, dynamic> item in jsonData) {
@@ -55,7 +50,8 @@ class SkinViewModel extends ChangeNotifier {
       skinModels.add(skin);
     }
     skins = skinModels;
-
+    highPerformanceDevice = await FaceunityPlugin.isHighPerformanceDevice();
+    supportsNPU = await FaceunityPlugin.isNPUSupported();
     recoverAllSkinValuesToDefault();
     notifyListeners();
   }
@@ -67,11 +63,6 @@ class SkinViewModel extends ChangeNotifier {
       if (currentIntValue != defaultIntValue) {
           return false;
       }
-      if (skin.extra != null) {
-        if (skin.extra?.value != skin.extra?.defaultValue) {
-          return false;
-        }
-      }
     }
     return true;
   }
@@ -81,26 +72,7 @@ class SkinViewModel extends ChangeNotifier {
     for (int i = 0; i < skins.length; i++) {
       skins[i].currentValue = skins[i].defaultValue;
       setIntensity(skins[i].currentValue, skins[i].type);
-      setSkinExtraToDefault(skins[i].extra);
     }
     notifyListeners();
-  }
-
-  void setSkinExtra(SkinExtraModel? extra) {
-    if (extra == null) return;
-    SkinPluin.setBeautyParam(extra.key, extra.value);
-  }
-
-  void setSkinExtraToDefault(SkinExtraModel? skinExtraModel) {
-    if (skinExtraModel == null) return;
-    skinExtraModel.value = skinExtraModel.defaultValue;
-    SkinPluin.setBeautyParam(skinExtraModel.key, skinExtraModel.defaultValue);
-  }
-
-  bool isSupport(SkinModel skin) {
-    if (blackList.contains(skin.type.number)) {
-      return false;
-    }
-    return devicePerformanceLevel >= skin.supportDeviceLevel;
   }
 }

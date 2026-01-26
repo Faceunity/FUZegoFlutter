@@ -12,7 +12,7 @@
 
 @interface FURenderKitManager ()
 
-@property (nonatomic, assign) FUDevicePerformanceLevel deviceLevel;
+@property (nonatomic, assign) FUDevicePerformanceLevel devicePerformanceLevel;
 
 @property (nonatomic, assign) BOOL isEffectsOn;
 
@@ -30,64 +30,36 @@
 }
 
 - (void)setupRenderKit {
-
+    [FURenderKit setLogLevel:FU_LOG_LEVEL_INFO];
+    
     FUSetupConfig *setupConfig = [[FUSetupConfig alloc] init];
     setupConfig.authPack = FUAuthPackMake(g_auth_package, sizeof(g_auth_package));
+    
     // 初始化 FURenderKit
     [FURenderKit setupWithSetupConfig:setupConfig];
-
-    // 设置日志等级
-    [FURenderKit setLogLevel:FU_LOG_LEVEL_INFO];
-
-    [FUAIKit shareKit].maxTrackFaces = 4;
-
-
-    self.deviceLevel = [FURenderKit devicePerformanceLevel];
-    if (self.deviceLevel <= FUDevicePerformanceLevelLow) {
-        // 打开动态质量
-        [FURenderKit setDynamicQualityControlEnabled:YES];
-    }
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [FURenderKitManager loadFaceAIModel];
-        [FURenderKitManager loadHumanAIModel];
-        [self setDevicePerformanceDetails];
-    });
-    // 默认加载美颜
-    [self loadBeauty];
-
-    self.isEffectsOn = YES;
-
-}
-
-
-- (void)setDevicePerformanceDetails {
-    // 设置人脸算法质量
-    [FUAIKit shareKit].faceProcessorFaceLandmarkQuality = self.deviceLevel >= FUDevicePerformanceLevelHigh ? FUFaceProcessorFaceLandmarkQualityHigh : FUFaceProcessorFaceLandmarkQualityMedium;
-    // 设置小脸检测是否打开
-    [FUAIKit shareKit].faceProcessorDetectSmallFace = self.deviceLevel >= FUDevicePerformanceLevelHigh;
-}
-
-+ (void)loadFaceAIModel {
-    FUDevicePerformanceLevel level = [FURenderKitManager sharedManager].deviceLevel;
-    FUFaceAlgorithmConfig config = FUFaceAlgorithmConfigEnableAll;
-    if (level < FUDevicePerformanceLevelHigh) {
-        // 关闭所有效果
-        config = FUFaceAlgorithmConfigDisableAll;
-    } else if (level < FUDevicePerformanceLevelVeryHigh) {
-        // 关闭皮肤分割、祛斑痘和 ARMeshV2
-        config = FUFaceAlgorithmConfigDisableSkinSegAndDelSpot | FUFaceAlgorithmConfigDisableARMeshV2;
-    } else if (level < FUDevicePerformanceLevelExcellent) {
-        config = FUFaceAlgorithmConfigDisableSkinSeg;
-    }
-    [FUAIKit setFaceAlgorithmConfig:config];
+    // 加载人脸 AI 模型
     NSString *faceAIPath = [[NSBundle mainBundle] pathForResource:@"ai_face_processor" ofType:@"bundle"];
     [FUAIKit loadAIModeWithAIType:FUAITYPE_FACEPROCESSOR dataPath:faceAIPath];
-}
-
-+ (void)loadHumanAIModel{
+    
+    // 加载身体 AI 模型
     NSString *bodyAIPath = [[NSBundle mainBundle] pathForResource:@"ai_human_processor" ofType:@"bundle"];
-    [FUAIKit loadAIHumanModelWithDataPath:bodyAIPath segmentationMode:(FUHumanSegmentationModeCPUCommon)];
+    [FUAIKit loadAIModeWithAIType:FUAITYPE_HUMAN_PROCESSOR dataPath:bodyAIPath];
+    
+    [FUAIKit shareKit].maxTrackFaces = 4;
+    
+    self.devicePerformanceLevel = [FURenderKit devicePerformanceLevel];
+    
+    // 设置人脸算法质量
+    [FUAIKit shareKit].faceProcessorFaceLandmarkQuality = self.devicePerformanceLevel == FUDevicePerformanceLevelHigh ? FUFaceProcessorFaceLandmarkQualityHigh : FUFaceProcessorFaceLandmarkQualityMedium;
+    
+    // 设置小脸检测是否打开
+    [FUAIKit shareKit].faceProcessorDetectSmallFace = self.devicePerformanceLevel == FUDevicePerformanceLevelHigh;
+    
+    [self loadBeauty];
+    
+    self.isEffectsOn = YES;
+    
 }
 
 - (void)destoryRenderKit {
@@ -119,7 +91,7 @@
     if (![FURenderKit shareRenderKit].beauty || ![FURenderKit shareRenderKit].beauty.enable) {
         return;
     }
-    if ([FURenderKitManager sharedManager].deviceLevel >= FUDevicePerformanceLevelHigh) {
+    if ([FURenderKitManager sharedManager].devicePerformanceLevel >= FUDevicePerformanceLevelHigh) {
         // 根据人脸置信度设置不同磨皮效果
         CGFloat score = [FUAIKit fuFaceProcessorGetConfidenceScore:0];
         if (score > 0.95) {
@@ -153,13 +125,8 @@
     [FURenderKit clear];
 }
 
-- (NSNumber *)devicePerformanceLevel {
-    return [NSNumber numberWithInt:(int)[FURenderKitManager sharedManager].deviceLevel];
-}
-
-- (void)setCameraPosition{
-    
-    [FURenderKitManager resetTrackedResult];
+- (NSNumber *)isHighPerformanceDevice {
+    return [NSNumber numberWithBool:[FURenderKitManager sharedManager].devicePerformanceLevel == FUDevicePerformanceLevelHigh];
 }
 
 - (NSNumber *)isNPUSupported {
@@ -209,13 +176,10 @@
 - (void)loadBeauty {
     NSString *path = [[NSBundle mainBundle] pathForResource:@"face_beautification" ofType:@"bundle"];
     FUBeauty *beauty = [[FUBeauty alloc] initWithPath:path name:@"FUBeauty"];
-    beauty.heavyBlur = 0;
     // 默认均匀磨皮
     beauty.blurType = 3;
-    // 默认精细变形
-    beauty.faceShape = 4;
     // 高性能设备设置去黑眼圈、去法令纹、大眼、嘴型最新效果
-    if ([FURenderKit devicePerformanceLevel] >= FUDevicePerformanceLevelHigh) {
+    if ([FURenderKit devicePerformanceLevel] == FUDevicePerformanceLevelHigh) {
         [beauty addPropertyMode:FUBeautyPropertyMode2 forKey:FUModeKeyRemovePouchStrength];
         [beauty addPropertyMode:FUBeautyPropertyMode2 forKey:FUModeKeyRemoveNasolabialFoldsStrength];
         [beauty addPropertyMode:FUBeautyPropertyMode3 forKey:FUModeKeyEyeEnlarging];

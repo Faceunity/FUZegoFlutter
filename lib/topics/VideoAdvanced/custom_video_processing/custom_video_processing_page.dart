@@ -10,7 +10,6 @@ import 'package:zego_express_example_topics_flutter/utils/zego_config.dart';
 import 'package:zego_express_example_topics_flutter/utils/zego_log_view.dart';
 import 'package:zego_express_example_topics_flutter/utils/user_id_helper.dart';
 import 'package:zego_express_example_topics_flutter/utils/zego_utils.dart';
-import 'dart:math' as math;
 
 class CustomVideoProcessingPage extends StatefulWidget {
   const CustomVideoProcessingPage({Key? key}) : super(key: key);
@@ -21,8 +20,8 @@ class CustomVideoProcessingPage extends StatefulWidget {
 }
 
 class _CustomVideoProcessingPageState extends State<CustomVideoProcessingPage> {
-  var _roomID = 'custom_video_process';
-  var _streamID = 'custom_video_process_s';
+  final _roomID = 'custom_video_process';
+  final _streamID = 'custom_video_process_s';
   static const _title = '自定义渲染';
   late ZegoRoomState _roomState;
   late ZegoPublisherState _publisherState;
@@ -41,9 +40,7 @@ class _CustomVideoProcessingPageState extends State<CustomVideoProcessingPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    
-    _roomID += "_${(math.Random().nextInt(10000) + 1).toString()}";
-    _streamID += "_${(math.Random().nextInt(10000) + 1).toString()}";
+
     _zegoDelegate = ZegoDelegate();
 
     _roomState = ZegoRoomState.Disconnected;
@@ -68,7 +65,7 @@ class _CustomVideoProcessingPageState extends State<CustomVideoProcessingPage> {
           config: ZegoCustomVideoProcessConfig(_bufferType));
     });
     // 默认使用前置相机
-    FaceUnityKit.setCameraPosition(true);
+    // FaceUnityKit.setCameraPosition(true);
   }
 
   @override
@@ -186,7 +183,7 @@ class _CustomVideoProcessingPageState extends State<CustomVideoProcessingPage> {
             icon: Icon(Icons.camera_alt_outlined, color: Colors.blueAccent),
             onPressed: () {
               isFrontCamera = !isFrontCamera;
-              _zegoDelegate.switchCamera(isFrontCamera).then((value) => FaceUnityKit.setCameraPosition(isFrontCamera));
+              // _zegoDelegate.switchCamera(isFrontCamera).then((value) => FaceUnityKit.setCameraPosition(isFrontCamera));
             },
           ),
         ],
@@ -527,13 +524,6 @@ class ZegoDelegate {
   }
 
   Future<void> switchCamera(bool front) {
-    if (Platform.isIOS) {
-      if(front){
-        ZegoExpressEngine.instance.setVideoMirrorMode(ZegoVideoMirrorMode.BothMirror);
-      }else{
-        ZegoExpressEngine.instance.setVideoMirrorMode(ZegoVideoMirrorMode.NoMirror);
-      }
-    }
     return ZegoExpressEngine.instance.useFrontCamera(front);
   }
 
@@ -542,6 +532,7 @@ class ZegoDelegate {
       // Instantiate a ZegoUser object
       ZegoUser user = ZegoUser(
           UserIdHelper.instance.userID, UserIdHelper.instance.userName);
+
       // Login Room
       await ZegoExpressEngine.instance.loginRoom(roomID, user);
       ZegoLog().addLog('🚪 Start login room, roomID: $roomID');
@@ -558,9 +549,6 @@ class ZegoDelegate {
 
   Future<Widget?> startPublishing(String streamID, {String? roomID}) async {
     var publishFunc = (int viewID) async {
-      if (Platform.isIOS) {
-        ZegoExpressEngine.instance.setVideoMirrorMode(ZegoVideoMirrorMode.BothMirror);
-      }
       ZegoExpressEngine.instance
           .startPreview(canvas: ZegoCanvas(viewID, backgroundColor: 0xffffff));
       if (roomID != null) {
