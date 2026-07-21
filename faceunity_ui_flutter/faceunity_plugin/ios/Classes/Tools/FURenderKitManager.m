@@ -50,11 +50,11 @@
     
     self.devicePerformanceLevel = [FURenderKit devicePerformanceLevel];
     
-    // 设置人脸算法质量
-    [FUAIKit shareKit].faceProcessorFaceLandmarkQuality = self.devicePerformanceLevel == FUDevicePerformanceLevelHigh ? FUFaceProcessorFaceLandmarkQualityHigh : FUFaceProcessorFaceLandmarkQualityMedium;
+    // 设置人脸算法质量（新版 SDK 高端机为 High/VeryHigh/Excellent，需用 >=）
+    [FUAIKit shareKit].faceProcessorFaceLandmarkQuality = self.devicePerformanceLevel >= FUDevicePerformanceLevelHigh ? FUFaceProcessorFaceLandmarkQualityHigh : FUFaceProcessorFaceLandmarkQualityMedium;
     
     // 设置小脸检测是否打开
-    [FUAIKit shareKit].faceProcessorDetectSmallFace = self.devicePerformanceLevel == FUDevicePerformanceLevelHigh;
+    [FUAIKit shareKit].faceProcessorDetectSmallFace = self.devicePerformanceLevel >= FUDevicePerformanceLevelHigh;
     
     [self loadBeauty];
     
@@ -126,7 +126,10 @@
 }
 
 - (NSNumber *)isHighPerformanceDevice {
-    return [NSNumber numberWithBool:[FURenderKitManager sharedManager].devicePerformanceLevel == FUDevicePerformanceLevelHigh];
+    // 直接读 SDK 当前等级，避免 setupRenderKit 未完成时缓存为 0；
+    // 新版枚举中 XR 及以上为 VeryHigh/Excellent，不能再用 == High
+    FUDevicePerformanceLevel level = [FURenderKit devicePerformanceLevel];
+    return [NSNumber numberWithBool:level >= FUDevicePerformanceLevelHigh];
 }
 
 - (NSNumber *)isNPUSupported {
@@ -179,7 +182,7 @@
     // 默认均匀磨皮
     beauty.blurType = 3;
     // 高性能设备设置去黑眼圈、去法令纹、大眼、嘴型最新效果
-    if ([FURenderKit devicePerformanceLevel] == FUDevicePerformanceLevelHigh) {
+    if ([FURenderKit devicePerformanceLevel] >= FUDevicePerformanceLevelHigh) {
         [beauty addPropertyMode:FUBeautyPropertyMode2 forKey:FUModeKeyRemovePouchStrength];
         [beauty addPropertyMode:FUBeautyPropertyMode2 forKey:FUModeKeyRemoveNasolabialFoldsStrength];
         [beauty addPropertyMode:FUBeautyPropertyMode3 forKey:FUModeKeyEyeEnlarging];

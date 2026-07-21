@@ -2,6 +2,7 @@ import 'package:faceunity_ui_flutter/common/slider_view.dart';
 import 'package:faceunity_ui_flutter/modules/skin/skin_model.dart';
 import 'package:faceunity_ui_flutter/modules/skin/skin_view_model.dart';
 import 'package:faceunity_ui_flutter/util/common_util.dart';
+import 'package:faceunity_ui_flutter/util/faceunity_defines.dart';
 import 'package:faceunity_ui_flutter/util/screen_util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -19,11 +20,11 @@ class SkinView extends StatefulWidget {
 
 class SkinViewState extends State<SkinView> {
   SkinViewModel viewModel = SkinViewModel();
-  
+
   @override
   Widget build(BuildContext context) {
     double width = ScreenUtil.getScreenW(context);
-    
+
     return ChangeNotifierProvider(
       create: (context) {
         return viewModel;
@@ -37,36 +38,36 @@ class SkinViewState extends State<SkinView> {
             defaulInMiddle = viewModel.skins[viewModel.selectedIndex].defaultValueInMiddle;
           }
           return Container(
-            color: const Color.fromARGB(200, 0, 0, 0),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                verticalDirection: VerticalDirection.up,
-                children: [
-                  _providerList(width),
-                  viewModel.selectedIndex >= 0 ? 
-                  SizedBox(
-                    height: 50,
-                    width: width - 112,
-                    child: SliderView(
-                      value: sliderValue,
-                      defaulInMiddle: defaulInMiddle,
-                      onChanged: (value) {
-                        // 程度值变化
-                        viewModel.setSkinIntensity(value);
-                      },
-                      onChangeEnd: () {
-                        // 滑动结束，需要刷新列表
-                        setState(() {
-                        });
-                      },
-                    ),
-                  ) : const SizedBox(
-                    height: 50,
+              color: const Color.fromARGB(200, 0, 0, 0),
+              child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    verticalDirection: VerticalDirection.up,
+                    children: [
+                      _providerList(width),
+                      viewModel.selectedIndex >= 0 ?
+                      SizedBox(
+                        height: 50,
+                        width: width - 112,
+                        child: SliderView(
+                          value: sliderValue,
+                          defaulInMiddle: defaulInMiddle,
+                          onChanged: (value) {
+                            // 程度值变化
+                            viewModel.setSkinIntensity(value);
+                          },
+                          onChangeEnd: () {
+                            // 滑动结束，需要刷新列表
+                            setState(() {
+                            });
+                          },
+                        ),
+                      ) : const SizedBox(
+                        height: 50,
+                      )
+                    ],
                   )
-                ],
               )
-            )
           );
         },
       ),
@@ -77,70 +78,70 @@ class SkinViewState extends State<SkinView> {
     // 是否默认值
     bool isDefault = viewModel.isDefaultValue;
     return SizedBox(
-      height: 98,
-      child: Row(
-        children: [
-          SizedBox(
-            width: 68,
-            child: Opacity(
-              opacity: isDefault ? 0.6 : 1,
-              child: TextButton(
-                style: ButtonStyle(
-                  overlayColor: MaterialStateProperty.resolveWith((states) => Colors.transparent)
-                ),
-                onPressed: () {
-                  if (!isDefault) {
-                    showAlertDialog(
-                      context: context, 
-                      content: "是否将所有参数恢复到默认值",
-                      comformPressed: () {
-                        viewModel.recoverAllSkinValuesToDefault();
-                      },
-                    );
-                    // viewModel.recoverAllSkinValuesToDefault();
-                  }
-                }, 
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 44,
-                      width: 44,
-                      child: Image(
-                        image: CommonUtil.assetImageNamed("common/recover"),
-                        fit: BoxFit.fill,
-                      ),
+        height: 98,
+        child: Row(
+          children: [
+            SizedBox(
+              width: 68,
+              child: Opacity(
+                opacity: isDefault ? 0.6 : 1,
+                child: TextButton(
+                    style: ButtonStyle(
+                        overlayColor: MaterialStateProperty.resolveWith((states) => Colors.transparent)
                     ),
-                    const SizedBox(
-                      height: 24,
-                      width: 44,
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Text("恢复", style: TextStyle(fontSize: 10, color: Colors.white), textAlign: TextAlign.center,),
-                      )
+                    onPressed: () {
+                      if (!isDefault) {
+                        showAlertDialog(
+                          context: context,
+                          content: "是否将所有参数恢复到默认值",
+                          comformPressed: () {
+                            viewModel.recoverAllSkinValuesToDefault();
+                          },
+                        );
+                        // viewModel.recoverAllSkinValuesToDefault();
+                      }
+                    },
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 44,
+                          width: 44,
+                          child: Image(
+                            image: CommonUtil.assetImageNamed("common/recover"),
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                        const SizedBox(
+                            height: 24,
+                            width: 44,
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: Text("恢复", style: TextStyle(fontSize: 10, color: Colors.white), textAlign: TextAlign.center,),
+                            )
+                        )
+                      ],
                     )
-                  ],
-                )
+                ),
               ),
             ),
-          ),
-          const VerticalDivider(
-            width: 1,
-            endIndent: 54,
-            indent: 20,
-            color: Color.fromARGB(51, 229, 229, 229),
-          ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.only(left:4),
-              itemBuilder: (context, index) {
-                return _itemCell(index);
-              },
-              itemCount: viewModel.skins.length,
-              scrollDirection: Axis.horizontal
+            const VerticalDivider(
+              width: 1,
+              endIndent: 54,
+              indent: 20,
+              color: Color.fromARGB(51, 229, 229, 229),
             ),
-          )
-        ],
-      )
+            Expanded(
+              child: ListView.builder(
+                  padding: const EdgeInsets.only(left:4),
+                  itemBuilder: (context, index) {
+                    return _itemCell(index);
+                  },
+                  itemCount: viewModel.skins.length,
+                  scrollDirection: Axis.horizontal
+              ),
+            )
+          ],
+        )
     );
   }
 
@@ -149,9 +150,14 @@ class SkinViewState extends State<SkinView> {
     String name = skin.name;
     bool needsNPU = skin.needsNPUSupport;
     bool needsHighPerformance = skin.differentiateDevicePerformance;
+    // iOS 全身磨皮/祛斑痘暂未上线，强制置灰（不影响 Android 及其他功能）
+    bool comingSoonOnIOS = defaultTargetPlatform == TargetPlatform.iOS &&
+        (skin.type == BeautySkin.bodyBlur || skin.type == BeautySkin.antiAcneSpot);
 
     bool disabled = false;
-    if (needsNPU) {
+    if (comingSoonOnIOS) {
+      disabled = true;
+    } else if (needsNPU) {
       disabled = !viewModel.supportsNPU;
     } else {
       if (needsHighPerformance) {
@@ -172,45 +178,47 @@ class SkinViewState extends State<SkinView> {
         textColor = Colors.white;
       }
     }
-    
+
     return Opacity(
       opacity: disabled ? 0.6 : 1.0,
       child: TextButton(
-        style: ButtonStyle(
-          overlayColor: MaterialStateProperty.resolveWith((states) => Colors.transparent)
-        ),
-        onPressed: () {
-          if (!disabled) {
-            setState(() {
-              viewModel.setSelectedIndex(index);
-            });
-          } else {
-            if (needsNPU) {
-              // 提示仅支持 NPU 机型
-              showCommonToast(context: context, content: defaultTargetPlatform == TargetPlatform.iOS ? "该功能仅支持iPhoneXR及以上机型使用" : "该功能即将上线");
+          style: ButtonStyle(
+              overlayColor: MaterialStateProperty.resolveWith((states) => Colors.transparent)
+          ),
+          onPressed: () {
+            if (!disabled) {
+              setState(() {
+                viewModel.setSelectedIndex(index);
+              });
+            } else {
+              if (comingSoonOnIOS) {
+                showCommonToast(context: context, content: "该功能即将上线");
+              } else if (needsNPU) {
+                // 提示仅支持 NPU 机型
+                showCommonToast(context: context, content: defaultTargetPlatform == TargetPlatform.iOS ? "该功能仅支持iPhoneXR及以上机型使用" : "该功能即将上线");
+              }
             }
-          }
-        }, 
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44,
-              width: 44,
-              child: Image(
-                image: CommonUtil.assetImageNamed("skin/$imageName"),
-                fit: BoxFit.fill,
+          },
+          child: Column(
+            children: [
+              SizedBox(
+                height: 44,
+                width: 44,
+                child: Image(
+                  image: CommonUtil.assetImageNamed("skin/$imageName"),
+                  fit: BoxFit.fill,
+                ),
               ),
-            ),
-            SizedBox(
-              height: 24,
-              width: 44,
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(name, style: TextStyle(fontSize: 10, color: textColor), textAlign: TextAlign.center,),
+              SizedBox(
+                  height: 24,
+                  width: 44,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Text(name, style: TextStyle(fontSize: 10, color: textColor), textAlign: TextAlign.center,),
+                  )
               )
-            )
-          ],
-        )
+            ],
+          )
       ),
     );
   }
