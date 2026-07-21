@@ -19,12 +19,12 @@
             // 新组合妆，每次加载必须重新初始化
             NSString *path = [FUUtil pluginBundlePathWithName:bundleName];
             FUMakeup *makeup = [FUMakeup itemWithPath:path name:bundleName];
-            // 高端机打开全脸分割
-            makeup.makeupSegmentation = [FURenderKit devicePerformanceLevel] == FUDevicePerformanceLevelHigh;
+            // 高端机打开全脸分割（新版 SDK 用 >= High，覆盖 VeryHigh/Excellent）
+            makeup.makeupSegmentation = [FURenderKit devicePerformanceLevel] >= FUDevicePerformanceLevelHigh;
             [FURenderKit shareRenderKit].makeup = makeup;
         } else {
             FUMakeup *makeup = [FUMakeup itemWithPath:[[NSBundle mainBundle] pathForResource:@"face_makeup" ofType:@"bundle"] name:@"face_makeup"];
-            makeup.makeupSegmentation = [FURenderKit devicePerformanceLevel] == FUDevicePerformanceLevelHigh;
+            makeup.makeupSegmentation = [FURenderKit devicePerformanceLevel] >= FUDevicePerformanceLevelHigh;
             [FURenderKit shareRenderKit].makeup = makeup;
             [self bindCombinationMakeupWithBundleName:bundleName];
         }

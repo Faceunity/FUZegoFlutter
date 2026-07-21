@@ -40,4 +40,6 @@ const _$BeautySkinEnumMap = {
   BeautySkin.removeNasolabialFoldsStrength: 8,
   BeautySkin.antiAcneSpot: 9,
   BeautySkin.clarity: 10,
+  BeautySkin.facialPlumping: 11,
+  BeautySkin.bodyBlur: 12,
 };

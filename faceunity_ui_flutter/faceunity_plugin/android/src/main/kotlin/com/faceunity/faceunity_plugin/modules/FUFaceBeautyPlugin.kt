@@ -1,4 +1,4 @@
-package com.faceunity.faceunity_plugin.modules
+package android.src.main.kotlin.com.faceunity.faceunity_plugin.modules
 
 import com.faceunity.core.faceunity.FUAIKit
 import com.faceunity.faceunity_plugin.FaceunityKit
@@ -47,6 +47,8 @@ class FUFaceBeautyPlugin : BaseModulePlugin() {
             }
 
             SkinEnum.FUBeautySkinClarity -> renderKit.faceBeauty?.clarityIntensity = value
+            SkinEnum.FUBeautySkinFacialPlumping -> renderKit.faceBeauty?.facialPlumpingIntensity = value
+            SkinEnum.FUBeautyShapeBodyBlur -> renderKit.faceBeauty?.bodyBlurIntensity = value
             else -> {}
         }
     }
@@ -80,6 +82,7 @@ class FUFaceBeautyPlugin : BaseModulePlugin() {
             ShapeEnum.FUBeautyShapeBrowHeight -> renderKit.faceBeauty?.browHeightIntensity = value
             ShapeEnum.FUBeautyShapeBrowSpace -> renderKit.faceBeauty?.browSpaceIntensity = value
             ShapeEnum.FUBeautyShapeBrowThick -> renderKit.faceBeauty?.browThickIntensity = value
+            ShapeEnum.FUBeautyShapeEyePupil -> renderKit.faceBeauty?.eyePupilIntensity = value
             else -> {}
         }
     }
@@ -134,7 +137,9 @@ class FUFaceBeautyPlugin : BaseModulePlugin() {
         FUBeautySkinRemovePouchStrength,
         FUBeautySkinRemoveNasolabialFoldsStrength,
         FUBeautySkinAntiAcneSpot,
-        FUBeautySkinClarity
+        FUBeautySkinClarity,
+        FUBeautySkinFacialPlumping,
+        FUBeautyShapeBodyBlur
     }
 
     enum class ShapeEnum {
@@ -162,7 +167,8 @@ class FUFaceBeautyPlugin : BaseModulePlugin() {
         FUBeautyShapeSmile,
         FUBeautyShapeBrowHeight,
         FUBeautyShapeBrowSpace,
-        FUBeautyShapeBrowThick
+        FUBeautyShapeBrowThick,
+        FUBeautyShapeEyePupil
     }
 
     override fun methods(): Map<String, (Map<String, Any>, MethodChannel.Result) -> Any> = methods
